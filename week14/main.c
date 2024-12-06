@@ -121,12 +121,41 @@ void checkDie(void)
 // ----- EX. 6 : game end ------------
 int getAlivePlayer(void)
 {
+   int i;
+   int cnt=0;
+   for (i=0; i<N_PLAYER; i++)
+   {
+       if (player_status[i]==PLAYERSTATUS_END)
+       {
+       	    cnt++;
+	   }
+	       
+   }
    
+   return cnt;
 }
 
-int getWinner(void)
-{
-    
+int getWinner(void) {
+    int i;
+    int winner = -1;
+    int max_coin = -1;
+    int count_max = 0;
+
+    for (i = 0; i < N_PLAYER; i++) {
+        if (player_coin[i] > max_coin) {
+            max_coin = player_coin[i];
+            winner = i;
+            count_max = 1; 
+        } else if (player_coin[i] == max_coin) {
+            count_max++; 
+        }
+    }
+
+    if (count_max > 1) {
+        return -1; 
+    }
+
+    return winner;
 }
 // ----- EX. 6 : game end ------------
 
@@ -163,6 +192,14 @@ int main(int argc, const char * argv[]) {
         int dieResult;
         int coinResult;
         int dum;
+        
+        if (turn==0)
+        {
+        	int shark_pos = board_stepShark();
+        	printf("Shark moved to %i\n", shark_pos);
+        	//check die
+        	checkDie();
+		}
 
 // ----- EX. 4 : player ------------
         if (player_status[turn] != PLAYERSTATUS_LIVE)
@@ -191,7 +228,7 @@ int main(int argc, const char * argv[]) {
         
         
         //step 2-3. moving
-        printf("%s : %d!\n", player_name[turn], dieResult);
+        printf("DIERESULT: %d!\n", dieResult);
         player_position[turn] += dieResult;
         printf("%s goes to %d.\n", player_name[turn], player_position[turn]);
         
@@ -210,12 +247,28 @@ int main(int argc, const char * argv[]) {
         turn = (turn + 1)%N_PLAYER;
 // ----- EX. 6 : game end ------------
     } while(game_end() == 0);
-    
     //step 3. game end process
     printf("GAME END!!\n");
-    printf("%i players are alive! winner is %s\n", getAlivePlayer(), player_name[getWinner()]);
+
+	int alivePlayers = getAlivePlayer();
+	int winner = getWinner();
+
+	printf("Number of players who completed the game: %d\n", alivePlayers);
+
+	if (winner == -1) {
+    	printf("All players are dead, and there is no winner due to a tie.\n");
+	}else if (alivePlayers > 0) {
+    	printf("Winner is %s with %d coins!\n", player_name[winner], player_coin[winner]);
+	} else {
+    	printf("All players are dead. Winner is %s with %d coins!\n", player_name[winner], player_coin[winner]);
+	}
+
+printf("Final board state:\n");
+board_printBoardStatus();
+printf("Final player status:\n");
+printPlayerStatus();
 // ----- EX. 6 : game end ------------
-    
+       
 // ----- EX. 2 : structuring ------------
 
     return 0;
